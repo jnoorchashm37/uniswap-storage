@@ -37,9 +37,9 @@ pub fn pool_manager_pool_tick_bitmap_slot(pool_id: U256, word_position: i16) -> 
 pub async fn pool_manager_pool_tick_fee_growth_outside<F: StorageSlotFetcher>(
     slot_fetcher: &F,
     pool_manager_address: Address,
-    block_number: Option<u64>,
     pool_id: B256,
     tick: I24,
+    block_number: Option<u64>,
 ) -> eyre::Result<(U256, U256)> {
     let pool_tick_slot = pool_manager_pool_tick_slot(pool_id.into(), tick);
     let pool_tick_slot_base = U256::from_be_slice(pool_tick_slot.as_slice());
@@ -68,11 +68,11 @@ pub async fn pool_manager_pool_tick_fee_growth_outside<F: StorageSlotFetcher>(
 pub async fn pool_manager_load_tick_map<F: StorageSlotFetcher>(
     slot_fetcher: &F,
     pool_manager_address: Address,
-    block_number: Option<u64>,
     pool_id: B256,
     tick_spacing: I24,
     start_tick: Option<I24>,
     end_tick: Option<I24>,
+    block_number: Option<u64>,
 ) -> eyre::Result<HashMap<I24, TickData>> {
     let start_tick = start_tick
         .map(|t| normalize_tick(t, tick_spacing))
@@ -87,11 +87,11 @@ pub async fn pool_manager_load_tick_map<F: StorageSlotFetcher>(
         let (_, tick) = next_tick_gt(
             slot_fetcher,
             pool_manager_address,
-            block_number,
             tick_spacing,
             pool_id,
             ct,
             true,
+            block_number,
         )
         .await?;
         initialized_ticks.push(tick);
@@ -105,10 +105,10 @@ pub async fn pool_manager_load_tick_map<F: StorageSlotFetcher>(
             pool_manager_load_tick_data(
                 slot_fetcher,
                 pool_manager_address,
-                block_number,
                 tick_spacing,
                 pool_id,
                 tick,
+                block_number,
             )
             .await
             .map(|d| (tick, d))
@@ -127,10 +127,10 @@ pub async fn pool_manager_load_tick_map<F: StorageSlotFetcher>(
 pub async fn pool_manager_load_tick_data<F: StorageSlotFetcher>(
     slot_fetcher: &F,
     pool_manager_address: Address,
-    block_number: Option<u64>,
     tick_spacing: I24,
     pool_id: B256,
     tick: I24,
+    block_number: Option<u64>,
 ) -> eyre::Result<TickData> {
     let pool_tick_slot = pool_manager_pool_tick_slot(pool_id.into(), tick);
     let pool_tick_slot_base = U256::from_be_slice(pool_tick_slot.as_slice());
@@ -156,10 +156,10 @@ pub async fn pool_manager_load_tick_data<F: StorageSlotFetcher>(
         tick_initialized(
             slot_fetcher,
             pool_manager_address,
-            block_number,
             tick_spacing,
             pool_id,
-            tick
+            tick,
+            block_number,
         )
     )?;
 
@@ -200,9 +200,9 @@ mod tests {
         let results = pool_manager_pool_tick_fee_growth_outside(
             &provider,
             V4_POOL_MANAGER_ADDRESS,
-            Some(block_number),
             pool_key.into(),
             I24::unchecked_from(190088),
+            Some(block_number),
         )
         .await
         .unwrap();
@@ -229,11 +229,11 @@ mod tests {
         let results = pool_manager_load_tick_map(
             &provider,
             V4_POOL_MANAGER_ADDRESS,
-            Some(block_number),
             pool_id,
             tick_spacing,
             None,
             None,
+            Some(block_number),
         )
         .await
         .unwrap();
@@ -257,10 +257,10 @@ mod tests {
         let results = pool_manager_load_tick_data(
             &provider,
             V4_POOL_MANAGER_ADDRESS,
-            Some(block_number),
             I24::unchecked_from(10),
             pool_key.into(),
             I24::unchecked_from(0),
+            Some(block_number),
         )
         .await
         .unwrap();

@@ -17,8 +17,8 @@ pub fn pool_manager_pool_state_slot(pool_id: U256) -> B256 {
 pub async fn pool_manager_pool_fee_growth_global<F: StorageSlotFetcher>(
     slot_fetcher: &F,
     pool_manager_address: Address,
-    block_number: Option<u64>,
     pool_id: B256,
+    block_number: Option<u64>,
 ) -> eyre::Result<(U256, U256)> {
     let pool_state_slot = pool_manager_pool_state_slot(pool_id.into());
     let pool_state_slot_base = U256::from_be_slice(pool_state_slot.as_slice());
@@ -47,8 +47,8 @@ pub async fn pool_manager_pool_fee_growth_global<F: StorageSlotFetcher>(
 pub async fn pool_manager_pool_slot0<F: StorageSlotFetcher>(
     slot_fetcher: &F,
     pool_manager_address: Address,
-    block_number: Option<u64>,
     pool_id: B256,
+    block_number: Option<u64>,
 ) -> eyre::Result<UnpackedSlot0> {
     let pool_state_slot = pool_manager_pool_state_slot(pool_id.into());
 
@@ -62,8 +62,8 @@ pub async fn pool_manager_pool_slot0<F: StorageSlotFetcher>(
 pub async fn pool_manager_pool_liquidity<F: StorageSlotFetcher>(
     slot_fetcher: &F,
     pool_manager_address: Address,
-    block_number: Option<u64>,
     pool_id: B256,
+    block_number: Option<u64>,
 ) -> eyre::Result<U256> {
     let pool_state_slot = pool_manager_pool_state_slot(pool_id.into());
     let pool_state_slot_base = U256::from_be_slice(pool_state_slot.as_slice());
@@ -108,8 +108,8 @@ mod tests {
         let results = pool_manager_pool_fee_growth_global(
             &provider,
             V4_POOL_MANAGER_ADDRESS,
-            Some(block_number),
             pool_key.into(),
+            Some(block_number),
         )
         .await
         .unwrap();
@@ -133,8 +133,8 @@ mod tests {
         let results = pool_manager_pool_slot0(
             &provider,
             V4_POOL_MANAGER_ADDRESS,
-            Some(block_number),
             pool_key.into(),
+            Some(block_number),
         )
         .await
         .unwrap();
@@ -165,8 +165,8 @@ mod tests {
         let results = pool_manager_pool_liquidity(
             &provider,
             V4_POOL_MANAGER_ADDRESS,
-            Some(block_number),
             pool_key.into(),
+            Some(block_number),
         )
         .await
         .unwrap();

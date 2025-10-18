@@ -26,11 +26,11 @@ pub fn pool_manager_position_state_slot(pool_id: U256, position_id: U256) -> B25
 pub async fn pool_manager_position_fee_growth_inside<F: StorageSlotFetcher>(
     slot_fetcher: &F,
     pool_manager_address: Address,
-    block_number: Option<u64>,
     pool_id: B256,
     current_tick: I24,
     tick_lower: I24,
     tick_upper: I24,
+    block_number: Option<u64>,
 ) -> eyre::Result<(U256, U256)> {
     let (
         (fee_growth_global0_x128, fee_growth_global1_x128),
@@ -40,22 +40,22 @@ pub async fn pool_manager_position_fee_growth_inside<F: StorageSlotFetcher>(
         pool_manager_pool_fee_growth_global(
             slot_fetcher,
             pool_manager_address,
-            block_number,
             pool_id,
+            block_number,
         ),
         pool_manager_pool_tick_fee_growth_outside(
             slot_fetcher,
             pool_manager_address,
-            block_number,
             pool_id,
-            tick_lower
+            tick_lower,
+            block_number,
         ),
         pool_manager_pool_tick_fee_growth_outside(
             slot_fetcher,
             pool_manager_address,
-            block_number,
             pool_id,
-            tick_upper
+            tick_upper,
+            block_number,
         )
     )?;
 
@@ -87,11 +87,11 @@ pub async fn pool_manager_position_state_last_fee_growth_inside<F: StorageSlotFe
     slot_fetcher: &F,
     pool_manager_address: Address,
     position_manager_address: Address,
-    block_number: Option<u64>,
     pool_id: B256,
     position_token_id: U256,
     tick_lower: I24,
     tick_upper: I24,
+    block_number: Option<u64>,
 ) -> eyre::Result<(U256, U256)> {
     let position_key = U256::from_be_slice(
         encode_position_key(
@@ -130,11 +130,11 @@ pub async fn pool_manager_position_state_liquidity<F: StorageSlotFetcher>(
     slot_fetcher: &F,
     pool_manager_address: Address,
     position_manager_address: Address,
-    block_number: Option<u64>,
     pool_id: B256,
     position_token_id: U256,
     tick_lower: I24,
     tick_upper: I24,
+    block_number: Option<u64>,
 ) -> eyre::Result<u128> {
     let position_key = U256::from_be_slice(
         encode_position_key(
@@ -180,11 +180,11 @@ mod tests {
         let results = pool_manager_position_fee_growth_inside(
             &provider,
             V4_POOL_MANAGER_ADDRESS,
-            Some(block_number),
             pool_key.into(),
             I24::unchecked_from(190088),
             I24::unchecked_from(-887270),
             I24::unchecked_from(887270),
+            Some(block_number),
         )
         .await
         .unwrap();
@@ -209,11 +209,11 @@ mod tests {
             &provider,
             V4_POOL_MANAGER_ADDRESS,
             V4_POSITION_MANAGER_ADDRESS,
-            Some(block_number),
             pool_key.into(),
             U256::from(14328_u64),
             I24::unchecked_from(-887270),
             I24::unchecked_from(887270),
+            Some(block_number),
         )
         .await
         .unwrap();
@@ -238,11 +238,11 @@ mod tests {
             &provider,
             V4_POOL_MANAGER_ADDRESS,
             V4_POSITION_MANAGER_ADDRESS,
-            Some(block_number),
             pool_key.into(),
             U256::from(14328_u64),
             I24::unchecked_from(-887270),
             I24::unchecked_from(887270),
+            Some(block_number),
         )
         .await
         .unwrap();
