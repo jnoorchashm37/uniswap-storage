@@ -17,9 +17,9 @@ sol! {
     }
 }
 
-impl Into<B256> for V4PoolKey {
-    fn into(self) -> B256 {
-        keccak256(self.abi_encode())
+impl From<V4PoolKey> for B256 {
+    fn from(value: V4PoolKey) -> Self {
+        keccak256(value.abi_encode())
     }
 }
 
