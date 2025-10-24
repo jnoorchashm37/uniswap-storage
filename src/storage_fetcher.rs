@@ -4,6 +4,16 @@ use alloy_primitives::{Address, StorageKey, StorageValue};
 use alloy_provider::{Provider, RootProvider};
 use auto_impl::auto_impl;
 
+#[auto_impl(&, Box, Arc)]
+pub trait StorageSlotFetcherSync {
+    fn storage_at(
+        &self,
+        address: Address,
+        key: StorageKey,
+        block_number: Option<u64>,
+    ) -> eyre::Result<StorageValue>;
+}
+
 #[async_trait::async_trait]
 #[auto_impl(&, Box, Arc)]
 pub trait StorageSlotFetcher: Sync {
@@ -74,6 +84,30 @@ mod revm_impls {
                 .map_err(|e| eyre::eyre!("{e:?}"))
         }
     }
+
+    impl<S: StorageSlotFetcherSync + DatabaseAsyncRef> StorageSlotFetcherSync for WrapDatabaseAsync<S> {
+        fn storage_at(
+            &self,
+            address: Address,
+            key: StorageKey,
+            _: Option<u64>,
+        ) -> eyre::Result<StorageValue> {
+            self.storage_ref(address, key.into())
+                .map_err(|e| eyre::eyre!("{e:?}"))
+        }
+    }
+
+    impl<S: StorageSlotFetcherSync + DatabaseRef> StorageSlotFetcherSync for CacheDB<S> {
+        fn storage_at(
+            &self,
+            address: Address,
+            key: StorageKey,
+            _: Option<u64>,
+        ) -> eyre::Result<StorageValue> {
+            self.storage_ref(address, key.into())
+                .map_err(|e| eyre::eyre!("{e:?}"))
+        }
+    }
 }
 
 #[cfg(feature = "local-reth")]
@@ -94,6 +128,26 @@ mod reth_db_impls {
         Rpc: RpcConvert,
     {
         async fn storage_at(
+            &self,
+            address: Address,
+            key: StorageKey,
+            block_number: Option<u64>,
+        ) -> eyre::Result<StorageValue> {
+            let block_id = block_number.map(Into::into).unwrap_or_else(BlockId::latest);
+            let state_provider = self.provider().state_by_block_id(block_id)?;
+
+            Ok(state_provider
+                .storage(address, key.into())?
+                .unwrap_or_default())
+        }
+    }
+
+    impl<N, Rpc> StorageSlotFetcherSync for EthApi<N, Rpc>
+    where
+        N: RpcNodeCore,
+        Rpc: RpcConvert,
+    {
+        fn storage_at(
             &self,
             address: Address,
             key: StorageKey,
